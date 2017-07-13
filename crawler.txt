@@ -37,3 +37,19 @@ looooop
 end
 
 Nokogiri for parsing and id-ing a-tags
+
+# class Crawler
+# 	#request the web page that you want to scrape
+# 	def initialize(url)
+# 		page = HTTParty.get(url)
+# 		Pry.start(binding)
+# 	end
+# 	#Transform response into parsable Nokogiri object
+# 	def create_document(page)
+# 		parse_page = nokogiri::HTML(page)
+# 	end
+
+# 	def get_links_from_document(document)
+# 		getting links from the document
+# 	end
+# end
