@@ -1,0 +1,39 @@
+Things the crawler needs to do (methods)
+
+SEED URL = ......
+
+class Crawler
+	def initialize ()
+		@seed_url = seed_url
+	end
+
+	Given a URL, get the document
+
+	method for getting links from the document
+end
+
+class Document
+	link itself
+	contents
+end
+
+
+class DataStructure
+	arr = []
+	get link from
+	adds links to data structure
+end
+
+
+Script
+
+New crawler instance, given the seed url
+instance of data structure
+looooop 
+	crawler gives links from current document
+	for each one, store it in data structure
+	get next link from structure
+	pass that one to crawler
+end
+
+Nokogiri for parsing and id-ing a-tags
