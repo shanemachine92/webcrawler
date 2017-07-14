@@ -20,7 +20,7 @@ end
 
 class DataStructure
 	arr = []
-	get link from
+	get link from crawler
 	adds links to data structure
 end
 

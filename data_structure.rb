@@ -1,11 +1,11 @@
+require 'nokogiri'
+require 'open-uri'
+require 'JSON'
+require 'pry'
+
 class DataStructure
+	attr_accessor :arr
 	def initialize
-		arr = []
-	end
-
-	def get_links
-	end
-
-	def add_links
+		@arr = []
 	end
 end
