@@ -3,27 +3,37 @@ require 'open-uri'
 require 'JSON'
 require 'pry'
 require_relative './document'
-require_relative './data_structure'
+require_relative './document_collection'
+require_relative './url_fetcher'
 
 class Crawler
-	def initialize
-		@doc = Document.new('http://dragonage.wikia.com')
-		@document_array = DataStructure.new
+	def initialize(document_collection, url_collection)
+		@document_collection = document_collection
+		@url_collection = url_collection
 	end
 
-	def store_links
-		@total_links = 0
-		@doc.links.each do |link|
-		  @document_array.arr.push(link)
-		  @total_links += 1
-		  puts link
+	def done_crawling?
+		@url_collection.empty?
+	end
+
+	def crawl_next_url
+		url = @url_collection.next_url
+		content = UrlFetcher.fetch(url)
+		document = Document.new(url, content)
+		@document_collection.add_document(document)
+		puts document.hrefs.take(5)
+		document.hrefs.each do |href|
+			@url_collection.add_url(href)
 		end
 	end
 
-	def get_next_link
-		@next_link = @document_array.arr.shift
+	def run(times_to_run)
+		times_to_run.times do
+			if done_crawling? 
+				puts "Crawling complete!"
+				exit 0
+			end
+			crawl_next_url
+		end
 	end
 end
-
-Crawler.new.store_links
-Crawler.new.crawl_links

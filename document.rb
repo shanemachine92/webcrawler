@@ -1,14 +1,24 @@
 require 'nokogiri'
-require 'open-uri'
 require 'pry'
 
 class Document
-	attr_accessor :doc, :links
-	def initialize(url)
-		# Fetch and parse HTML document
-		@doc = Nokogiri::HTML(open(url))
-		@links = @doc.css('a').map { |link| link['href'] }
+	def initialize(url, content)
+		@url = url
+		@content = content
+	end
+
+	def hrefs
+		@hrefs ||= links.map { |link| link['href'] }.uniq
+	end
+
+	private
+
+	def parsed
+		@parsed ||= Nokogiri::HTML(@content)
+	end
+
+	def links
+		@links ||= parsed.css('a')
 	end
 end
 
-Document.new("http://dragonage.wikia.com")
