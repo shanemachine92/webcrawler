@@ -15,4 +15,8 @@ class DocumentCollection
 	def size
 		@arr.size
 	end
+
+	def element(i)
+		@arr[i]
+	end
 end
