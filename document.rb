@@ -9,7 +9,6 @@ class Document
 
 	def domain_hrefs
 		@domain_hrefs ||= hrefs.grep (/^\/wiki\//)
-		@domain_hrefs ||= hrefs.match ('/wiki/')
 	end
 
 	private
