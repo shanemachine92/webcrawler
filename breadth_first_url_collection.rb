@@ -1,4 +1,6 @@
-class UrlCollection
+require_relative './base_url_collection'
+
+class BreadthFirstUrlCollection < UrlBaseCollection
 	def initialize
 		@arr = []
 	end
