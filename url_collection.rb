@@ -4,7 +4,7 @@ class UrlCollection
 	end
 
 	def next_url
-		@next_url = @arr.shift
+		@next_url = "#{BASE_URL}#{@arr.shift}"
 		@next_url
 	end
 

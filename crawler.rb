@@ -21,8 +21,8 @@ class Crawler
 		content = UrlFetcher.fetch(url)
 		document = Document.new(url, content)
 		@document_collection.add_document(document)
-		puts document.hrefs.take(5)
-		document.hrefs.each do |href|
+		puts document.domain_hrefs.take(5)
+		document.domain_hrefs.each do |href|
 			@url_collection.add_url(href)
 		end
 	end
