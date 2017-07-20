@@ -15,8 +15,4 @@ class DocumentCollection
 	def size
 		@arr.size
 	end
-
-	def [](key)
-		@arr[key]
-	end
 end

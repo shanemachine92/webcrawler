@@ -1,7 +1,6 @@
 x) filter for domain-specific links only
 x) Test relative urls
-o) create a base class for url collection (what???) and make url_collection an implementation of new base class
-	data_collection? Have noth url and document be implementations of this class?
+x) create a base class for url collection (what???) and make url_collection an implementation of new base class
 o) Handle duplicates across domain
 o) write tests
 
