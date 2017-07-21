@@ -11,7 +11,7 @@ url_collection = BreadthFirstUrlCollection.new
 url_collection.add_url('')
 crawler = Crawler.new(document_collection, url_collection)
 
-crawler.run(3)
+crawler.run(0)
 puts "documents created: #{document_collection.size}"
 puts "links collected: #{url_collection.size}"
 

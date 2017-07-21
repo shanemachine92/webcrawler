@@ -1,6 +1,5 @@
 require 'nokogiri'
 require 'open-uri'
-require 'JSON'
 require 'pry'
 
 class DocumentCollection
