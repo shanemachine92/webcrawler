@@ -29,7 +29,7 @@ class Crawler
 			@url_collection.add_url(href)
 			track_url(href)
 		end
-					p "set size: #{@set.size}"
+		p "set size: #{@set.size}"
 	end
 
 	def already_crawled?(url)
