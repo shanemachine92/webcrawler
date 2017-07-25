@@ -7,11 +7,11 @@ require_relative './depth_first_url_collection'
 BASE_URL = 'http://dragonage.wikia.com'
 
 document_collection = DocumentCollection.new
-url_collection = BreadthFirstUrlCollection.new
+url_collection = DepthFirstUrlCollection.new
 url_collection.add_url('')
 crawler = Crawler.new(document_collection, url_collection)
 
-crawler.run(0)
+crawler.run(10)
+
 puts "documents created: #{document_collection.size}"
 puts "links collected: #{url_collection.size}"
-
