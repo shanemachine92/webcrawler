@@ -7,6 +7,7 @@ require_relative './document_collection'
 require_relative './url_fetcher'
 require 'set'
 
+
 class Crawler
 	def initialize(document_collection, url_collection)
 		@document_collection = document_collection
