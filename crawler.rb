@@ -9,6 +9,7 @@ require 'set'
 
 
 class Crawler
+	attr_accessor :url, :href
 	def initialize(document_collection, url_collection)
 		@document_collection = document_collection
 		@url_collection = url_collection
@@ -30,7 +31,8 @@ class Crawler
 			@url_collection.add_url(href)
 			track_url(href)
 		end
-		p "set size: #{@set.size}"
+		puts "set size: #{@set.size}"
+		puts "url collection size: #{@url_collection.size}"
 	end
 
 	def already_crawled?(url)
@@ -41,13 +43,15 @@ class Crawler
 		@set.add(url)
 	end
 
-	def run(times_to_run)
-		times_to_run.times do
+	def run
+		begin
 			if done_crawling?
 				puts "Crawling complete!"
 				exit 0
 			end
 			crawl_next_url
+		rescue OpenURI::HTTPError=>e
+			puts "Error: #{e}"
 		end
 	end
 end
