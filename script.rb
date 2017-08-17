@@ -1,16 +1,22 @@
 require 'pry'
 require 'sqlite3'
 require_relative './crawler'
-require_relative './document_collection'
-require_relative './breadth_first_url_collection'
-require_relative './depth_first_url_collection'
+require_relative 'db_script'
+require_relative 'document_collection'
 
-BASE_URL = 'http://dragonage.wikia.com'
+db = SQLite3::Database.new 'webcrawler.db'
+
+db.execute <<-SQL
+  CREATE TABLE IF NOT EXISTS URLS_to_crawl (
+    url varchar(150),
+    state varchar(150)
+  );
+SQL
+
+db.execute("INSERT OR IGNORE INTO URLS_to_crawl (url, state) VALUES ('http://dragonage.wikia.com', 'uncrawled')")
 
 document_collection = DocumentCollection.new
-url_collection = BreadthFirstUrlCollection.new
-url_collection.add_url('')
-crawler = Crawler.new(document_collection, url_collection)
+crawler = Crawler.new(document_collection, db)
 
 loop do 
   crawler.run

@@ -5,39 +5,38 @@ require 'nokogiri'
 require 'open-uri'
 require_relative './document'
 require_relative './url_fetcher'
-require_relative './document_collection'
 
 class Crawler
   attr_accessor :url, :href, :db
-  def initialize(document_collection, url_collection, db)
+  def initialize(document_collection, db)
     @document_collection = document_collection
-    @url_collection = url_collection
     @set = Set.new
     @database = db 
   end
 
   def done_crawling?
-    @url_collection.empty?
+    @database.execute( "SELECT count(*) FROM URLS_to_crawl WHERE state = 'uncrawled'" )[0][0] == 0
   end
 
   def crawl_next_url
-    url = @url_collection.next_url
-    state = "uncrawled"
+    url = @database.execute( "SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' LIMIT 1" )[0][0]
     content = UrlFetcher.fetch(url)
     document = Document.new(url, content)
     @document_collection.add_document(document)
     puts document.domain_hrefs.take(5)
     document.domain_hrefs.each do |href|
       next if already_crawled?(href)
-      @url_collection.add_url(href)
-      track_url(href)
-      write_to_db
-      update_state
+      write_to_db(href)
     end
+    update_state(url)
   end
 
-  def update_state
-    state = "crawled"
+  def update_state(url)
+    @database.execute( "UPDATE URLS_to_crawl SET state = 'crawled' WHERE url = ?", [url] )
+  end
+
+  def update_state_for_error(url)
+    @database.execute( "UPDATE URLS_to_crawl SET state = 'error' WHERE url = ?", [url] )
   end
 
   def already_crawled?(url)
@@ -48,9 +47,9 @@ class Crawler
     @set.add(url)
   end
 
-  def write_to_db(url, state)
+  def write_to_db(url)
     @database.execute("INSERT INTO URLS_to_crawl (url, state) 
-                VALUES (?, ?)", [url, state])
+                VALUES (?, 'uncrawled')", [url])
 
     @database.execute( "select * from URLS_to_crawl" ) do |row|
       p row
@@ -64,8 +63,8 @@ class Crawler
         exit 0
       end
       crawl_next_url
-    rescue OpenURI::HTTPError=>e
-      puts "Error: #{e}"
+    rescue =>e
+      update_state_for_error(url)
     end
   end
 end
