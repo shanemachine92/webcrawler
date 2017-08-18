@@ -23,11 +23,9 @@ class Crawler
       url = @database.execute( "SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' LIMIT 1" )[0][0]
       content = UrlFetcher.fetch(url)
       document = Document.new(url, content)
-      @document_collection.add_document(document)
-      puts document.domain_hrefs.take(5)
+      write_documents_to_db(document)
       document.domain_hrefs.each do |href|
-        next if already_crawled?(href)
-        write_to_db(href)
+        write_urls_to_db(href)
       end
       update_state(url)
     rescue => e
@@ -52,13 +50,20 @@ class Crawler
     @set.add(url)
   end
 
-  def write_to_db(url)
+  def write_urls_to_db(url)
     @database.execute("INSERT INTO URLS_to_crawl (url, state) 
                 VALUES (?, 'uncrawled')", ['http://dragonage.wikia.com' + url])
 
     @database.execute( "select * from URLS_to_crawl" ) do |row|
       p row
     end
+  end  
+
+  def write_documents_to_db(document)
+    url = @database.execute( "SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' LIMIT 1" )[0][0]
+    content = UrlFetcher.fetch(url)
+    @database.execute("INSERT INTO documents (url, content) 
+                VALUES (?, ?)", [url, content])
   end
 
   def run
