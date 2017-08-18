@@ -1,7 +1,6 @@
 require 'pry'
 require 'sqlite3'
 require_relative './crawler'
-require_relative 'document_collection'
 
 db = SQLite3::Database.new 'webcrawler.db'
 
@@ -21,8 +20,7 @@ db.execute <<-SQL
   );
 SQL
 
-document_collection = DocumentCollection.new
-crawler = Crawler.new(document_collection, db)
+crawler = Crawler.new(db)
 
 loop do 
   crawler.run

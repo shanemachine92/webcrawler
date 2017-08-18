@@ -8,9 +8,7 @@ require_relative './url_fetcher'
 
 class Crawler
   attr_accessor :url, :href, :db
-  def initialize(document_collection, db)
-    @document_collection = document_collection
-    @set = Set.new
+  def initialize(db)
     @database = db 
   end
 
@@ -42,27 +40,15 @@ class Crawler
     @database.execute( "UPDATE URLS_to_crawl SET state = 'error' WHERE url = ?", [url] )
   end
 
-  def already_crawled?(url)
-    @set.include?(url)
-  end
-
-  def track_url(url)
-    @set.add(url)
-  end
-
   def write_urls_to_db(url)
-    @database.execute("INSERT INTO URLS_to_crawl (url, state) 
+    @database.execute("INSERT OR IGNORE INTO URLS_to_crawl (url, state) 
                 VALUES (?, 'uncrawled')", ['http://dragonage.wikia.com' + url])
-
-    @database.execute( "select * from URLS_to_crawl" ) do |row|
-      p row
-    end
   end  
 
   def write_documents_to_db(document)
     url = @database.execute( "SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' LIMIT 1" )[0][0]
     content = UrlFetcher.fetch(url)
-    @database.execute("INSERT INTO documents (url, content) 
+    @database.execute("INSERT OR IGNORE INTO documents (url, content) 
                 VALUES (?, ?)", [url, content])
   end
 
