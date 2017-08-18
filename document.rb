@@ -25,4 +25,3 @@ class Document
     @links ||= parsed.css('a')
   end
 end
-
