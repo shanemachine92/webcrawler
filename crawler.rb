@@ -19,16 +19,21 @@ class Crawler
   end
 
   def crawl_next_url
-    url = @database.execute( "SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' LIMIT 1" )[0][0]
-    content = UrlFetcher.fetch(url)
-    document = Document.new(url, content)
-    @document_collection.add_document(document)
-    puts document.domain_hrefs.take(5)
-    document.domain_hrefs.each do |href|
-      next if already_crawled?(href)
-      write_to_db(href)
+    begin
+      url = @database.execute( "SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' LIMIT 1" )[0][0]
+      content = UrlFetcher.fetch(url)
+      document = Document.new(url, content)
+      @document_collection.add_document(document)
+      puts document.domain_hrefs.take(5)
+      document.domain_hrefs.each do |href|
+        next if already_crawled?(href)
+        write_to_db(href)
+      end
+      update_state(url)
+    rescue => e
+      puts "#{e} #{url}"
+      update_state_for_error(url)
     end
-    update_state(url)
   end
 
   def update_state(url)
@@ -49,7 +54,7 @@ class Crawler
 
   def write_to_db(url)
     @database.execute("INSERT INTO URLS_to_crawl (url, state) 
-                VALUES (?, 'uncrawled')", [url])
+                VALUES (?, 'uncrawled')", ['http://dragonage.wikia.com' + url])
 
     @database.execute( "select * from URLS_to_crawl" ) do |row|
       p row
@@ -57,14 +62,10 @@ class Crawler
   end
 
   def run
-    begin
-      if done_crawling?
-        puts "Crawling complete!"
-        exit 0
-      end
-      crawl_next_url
-    rescue =>e
-      update_state_for_error(url)
+    if done_crawling?
+      puts "Crawling complete!"
+      exit 0
     end
+    crawl_next_url
   end
 end
