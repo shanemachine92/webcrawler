@@ -53,8 +53,10 @@ class Crawler
   end
 
   def run
+    @database = db 
     if done_crawling?
       puts "Crawling complete!"
+      %x(/usr/local/bin/terminal-notifier -message "Total Documents: #{@database.execute("SELECT COUNT(*) FROM documents")}" -title "Crawling Complete!")
       exit 0
     end
     crawl_next_url
