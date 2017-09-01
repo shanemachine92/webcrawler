@@ -2,7 +2,7 @@ require 'pry'
 require 'sqlite3'
 require_relative './crawler'
 
-connection = SQLite3::Database.new 'webcrawler.connection'
+connection = SQLite3::Database.new 'webcrawler.db'
 
 connection.execute <<-SQL
   CREATE TABLE IF NOT EXISTS URLS_to_crawl (

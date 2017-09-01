@@ -22,9 +22,11 @@ class Crawler
       content = UrlFetcher.fetch(url)
       document = Document.new(url, content)
       get_url_and_write_document(document)
+      @connection.transaction
       document.domain_hrefs.each { |href| write_urls_to_database(href) }
       update_state(url)
-    rescue => e
+      @connection.commit
+    rescue StandardError, SQLite3::Exception => e
       puts "#{e} #{url}"
       update_state_for_error(url)
     end
