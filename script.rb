@@ -2,25 +2,25 @@ require 'pry'
 require 'sqlite3'
 require_relative './crawler'
 
-db = SQLite3::Database.new 'webcrawler.db'
+connection = SQLite3::Database.new 'webcrawler.connection'
 
-db.execute <<-SQL
+connection.execute <<-SQL
   CREATE TABLE IF NOT EXISTS URLS_to_crawl (
-    url varchar(200) PRIMARY KEY,
-    state varchar(25)
+    url TEXT PRIMARY KEY,
+    state varchar(10)
   );
 SQL
 
-db.execute("INSERT OR IGNORE INTO URLS_to_crawl (url, state) VALUES ('http://dragonage.wikia.com', 'uncrawled')")
+connection.execute("INSERT OR IGNORE INTO URLS_to_crawl (url, state) VALUES ('http://dragonage.wikia.com', 'uncrawled')")
 
-db.execute <<-SQL
+connection.execute <<-SQL
   CREATE TABLE IF NOT EXISTS documents (
-    url varchar(200) PRIMARY KEY,
-    content varchar(65535)
+    url TEXT PRIMARY KEY,
+    content TEXT
   );
 SQL
 
-crawler = Crawler.new(db)
+crawler = Crawler.new(connection)
 
 loop do 
   crawler.run
