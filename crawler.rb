@@ -18,17 +18,18 @@ class Crawler
 
   def crawl_next_url
     begin
+      @connection.transaction
       url = @connection.execute("SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' LIMIT 1")[0][0]
       content = UrlFetcher.fetch(url)
       document = Document.new(url, content)
       get_url_and_write_document(document)
-      @connection.transaction
       document.domain_hrefs.each { |href| write_urls_to_database(href) }
       update_state(url)
       @connection.commit
     rescue StandardError, SQLite3::Exception => e
       puts "#{e} #{url}"
       update_state_for_error(url)
+      @connection.rollback
     end
   end
 

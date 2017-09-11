@@ -7,7 +7,8 @@ connection = SQLite3::Database.new 'webcrawler.db'
 connection.execute <<-SQL
   CREATE TABLE IF NOT EXISTS URLS_to_crawl (
     url TEXT PRIMARY KEY,
-    state varchar(10)
+    state varchar(10),
+    CONSTRAINT `id_UNIQUE` UNIQUE (`URL_id`)
   );
 SQL
 
