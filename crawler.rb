@@ -18,18 +18,17 @@ class Crawler
 
   def crawl_next_url
     begin
-      @connection.transaction
-      url = @connection.execute("SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' LIMIT 1")[0][0]
-      content = UrlFetcher.fetch(url)
-      document = Document.new(url, content)
-      get_url_and_write_document(document)
-      document.domain_hrefs.each { |href| write_urls_to_database(href) }
-      update_state(url)
-      @connection.commit
-    rescue StandardError, SQLite3::Exception => e
+      @connection.transaction do
+        url = @connection.execute("SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' ORDER BY id LIMIT 1")[0][0]
+        content = UrlFetcher.fetch(url)
+        document = Document.new(url, content)
+        get_url_and_write_document(document)
+        document.domain_hrefs.each { |href| write_urls_to_database(href) }
+        update_state(url)
+      end
+    rescue StandardError => e
       puts "#{e} #{url}"
       update_state_for_error(url)
-      @connection.rollback
     end
   end
 
@@ -47,7 +46,7 @@ class Crawler
   end  
 
   def get_url_and_write_document(document)
-    url = @connection.execute("SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' LIMIT 1")[0][0]
+    url = @connection.execute("SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' ORDER BY id LIMIT 1")[0][0]
     content = UrlFetcher.fetch(url)
     @connection.execute("INSERT INTO documents (url, content) 
                 VALUES (?, ?)", [url, content])
