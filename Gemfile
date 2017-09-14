@@ -1,0 +1,5 @@
+gem 'nokogiri', '~> 1.8'
+gem 'pry', '~> 0.10.4'
+gem 'activesupport', '~> 5.1', '>= 5.1.3'
+gem 'rake', '~> 11.2', '>= 11.2.2'
+gem 'sqlite3', '~> 1.3', '>= 1.3.11'

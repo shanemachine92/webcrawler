@@ -1,52 +1,63 @@
+require 'pry'
+require 'set'
+require 'JSON'
 require 'nokogiri'
 require 'open-uri'
-require 'JSON'
-require 'pry'
 require_relative './document'
-require_relative './document_collection'
 require_relative './url_fetcher'
-require 'set'
 
 class Crawler
-  def initialize(document_collection, url_collection)
-    @document_collection = document_collection
-    @url_collection = url_collection
-    @crawler_known_links = Set.new
+  attr_accessor :url, :href, :connection
+  def initialize(connection)
+    @connection = connection 
   end
 
   def done_crawling?
-    @url_collection.empty?
+    @connection.execute("SELECT count(*) FROM URLS_to_crawl WHERE state = 'uncrawled'")[0][0] == 0
   end
 
   def crawl_next_url
-    url = @url_collection.next_url
-    content = UrlFetcher.fetch(url)
-    document = Document.new(url, content)
-    @document_collection.add_document(document)
-    puts document.domain_hrefs.take(5)
-    document.domain_hrefs.each do |href|
-      next if already_crawled?(href)
-      @url_collection.add_url(href)
-      track_url(href)
-    end
-          p "set size: #{@crawler_known_links.size}"
-  end
-
-  def already_crawled?(url)
-    @crawler_known_links.include?(url)
-  end
-
-  def track_url(url)
-    @crawler_known_links.add(url)
-  end
-
-  def run(times_to_run)
-    times_to_run.times do
-      if done_crawling?
-        puts "Crawling complete!"
-        exit 0
+    begin
+      @connection.transaction do
+        url = @connection.execute("SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' ORDER BY id LIMIT 1")[0][0]
+        content = UrlFetcher.fetch(url)
+        document = Document.new(url, content)
+        get_url_and_write_document(document)
+        document.domain_hrefs.each { |href| write_urls_to_database(href) }
+        update_state(url)
       end
-      crawl_next_url
+    rescue StandardError => e
+      puts "#{e} #{url}"
+      update_state_for_error(url)
     end
+  end
+
+  def update_state(url)
+    @connection.execute("UPDATE URLS_to_crawl SET state = 'crawled' WHERE url = ?", [url])
+  end
+
+  def update_state_for_error(url)
+    @connection.execute("UPDATE URLS_to_crawl SET state = 'error' WHERE url = ?", [url])
+  end
+
+  def write_urls_to_database(url)
+    @connection.execute("INSERT OR IGNORE INTO URLS_to_crawl (url, state) 
+                VALUES (?, 'uncrawled')", ['http://dragonage.wikia.com' + url])
+  end  
+
+  def get_url_and_write_document(document)
+    url = @connection.execute("SELECT url FROM URLS_to_crawl WHERE state = 'uncrawled' ORDER BY id LIMIT 1")[0][0]
+    content = UrlFetcher.fetch(url)
+    @connection.execute("INSERT INTO documents (url, content) 
+                VALUES (?, ?)", [url, content])
+  end
+
+  def run
+    if done_crawling?
+      puts "Crawling complete!"
+      %x(/usr/local/bin/terminal-notifier -message "Total Documents: #{@connection.execute("SELECT COUNT(*) FROM documents")}" -title "Crawling Complete!")
+      exit 0
+    end
+    crawl_next_url
   end
 end
